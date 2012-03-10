@@ -1,0 +1,37 @@
+{*
+ * manufakturI18n
+ *
+ * @author Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
+ * @link http://phpmanufaktur.de/kit_cronjob
+ * @copyright 2012
+ * @license http://www.gnu.org/licenses/gpl.html GNU Public License (GPL)
+ * @version $Id$
+ *
+ * Please consult the Dwoo Documentation & WIKI to get further informations 
+ * and hints for the usage of the Dwoo template engine.
+ *
+ * @link http://wiki.dwoo.org/
+ *
+ * Use {dump()} to get a list of all in this template available variables!
+ *}
+<script type="text/javascript">
+  var WB_URL = '{$WB_URL}';
+</script>
+<div class="idea_backend">
+  <ul class="nav_tab">
+  {foreach $navigation nav}
+    {if $nav.active == 1}
+      <li class="selected"><a href="{$nav.url}">{$nav.text}</a></li>
+    {else}
+      <li><a href="{$nav.url}">{$nav.text}</a></li>
+    {/if}
+  {/foreach}
+  </ul>
+{if $error == 1}
+  <div class="error">
+{else}
+  <div>
+{/if}
+    {$content}
+  </div>
+</div>

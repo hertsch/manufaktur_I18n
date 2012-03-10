@@ -1,0 +1,37 @@
+{*
+ * manufakturI18n
+ *
+ * @author Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
+ * @link http://phpmanufaktur.de
+ * @copyright 2012
+ * @license http://www.gnu.org/licenses/gpl.html GNU Public License (GPL)
+ * @version $Id$
+ *
+ * Please consult the Dwoo Documentation & WIKI to get further informations 
+ * and hints for the usage of the Dwoo template engine.
+ *
+ * @link http://wiki.dwoo.org/
+ *
+ * Use {dump()} to get a list of all in this template available variables!
+ *}
+<div class="i18n_about">
+  {if isset($img_url)}
+  <div class="about_logo">
+    <img src="{$img_url}kit_cronjob_logo_450x300.jpg" width="424" height="283" alt="manufakturI18n" />
+  </div>
+  {/if}
+  <div class="about_text">
+    <h2>manufakturI18n</h2>
+    <p>Release {$version}</b> - &copy 2012 by phpManufaktur, Ralf Hertsch (Berlin)</p>
+    <p class="about_address"><b>phpManufaktur</b><br />Ralf Hertsch<br />Stockholmer Str. 31<br />13359 Berlin</p>
+    <p class="about_contact">
+      <a href="http://phpmanufaktur.de" target="_blank">http://phpManufaktur.de</a><br />
+      <a href="mailto:ralf.hertsch@phpmanufaktur.de">ralf.hertsch@phpManufaktur.de</a><br />
+      phone +49 (0)30 68813647
+    </p>
+    <div class="about_release">
+      <h2>History:</h2>
+      <pre>{$release_notes}</pre>
+    </div>
+  </div>
+</div>
