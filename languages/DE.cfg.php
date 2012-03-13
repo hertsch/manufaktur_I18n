@@ -16,7 +16,7 @@ if ('á' != "\xc3\xa1") {
 }
 
 if (!defined('CFG_CURRENCY'))
-    define('CFG_CURRENY', '%s €');
+    define('CFG_CURRENCY', '%s €');
 if (!defined('CFG_DATE_SEPARATOR'))
     define('CFG_DATE_SEPARATOR', '.');
 if (!defined('CFG_DATE_STR'))
@@ -32,7 +32,7 @@ if (!defined('CFG_MONTH_NAMES'))
 if (!defined('CFG_THOUSAND_SEPARATOR'))
     define('CFG_THOUSAND_SEPARATOR', '.');
 if (!defined('CFG_TIME_LONG_STR'))
-    define('CFG_TIME_LONG_STRING', 'H:i:s');
+    define('CFG_TIME_LONG_STR', 'H:i:s');
 if (!defined('CFG_TIME_STR'))
     define('CFG_TIME_STR', 'H:i');
 if (!defined('CFG_TIME_ZONE'))

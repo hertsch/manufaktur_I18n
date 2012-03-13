@@ -17,11 +17,11 @@
 <div class="i18n_about">
   {if isset($img_url)}
   <div class="about_logo">
-    <img src="{$img_url}kit_cronjob_logo_450x300.jpg" width="424" height="283" alt="manufakturI18n" />
+    <img src="{$img_url}manufaktur_i18n_logo_250x250.png" width="250" height="250" alt="manufaktur_I18n" />
   </div>
-  {/if}
+  {/if} 
   <div class="about_text">
-    <h2>manufakturI18n</h2>
+    <h2>manufaktur_I18n</h2>
     <p>Release {$version}</b> - &copy 2012 by phpManufaktur, Ralf Hertsch (Berlin)</p>
     <p class="about_address"><b>phpManufaktur</b><br />Ralf Hertsch<br />Stockholmer Str. 31<br />13359 Berlin</p>
     <p class="about_contact">

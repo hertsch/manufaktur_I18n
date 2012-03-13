@@ -34,7 +34,7 @@ if (defined('WB_PATH')) {
 
 
 $module_directory = 'manufaktur_i18n';
-$module_name = 'manufakturI18n';
+$module_name = 'manufaktur_I18n';
 $module_function = 'library';
 $module_version = '0.10';
 $module_status = 'BETA';
