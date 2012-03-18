@@ -14,11 +14,8 @@
  *
  * Use {dump()} to get a list of all in this template available variables!
  *}
-<script type="text/javascript">
-  var WB_URL = '{$WB_URL}';
-</script>
-<div class="idea_backend">
-  <ul class="nav_tab">
+<div id="i18n_container">
+  <ul class="navigation">
   {foreach $navigation nav}
     {if $nav.active == 1}
       <li class="selected"><a href="{$nav.url}">{I18n($nav.text)}</a></li>
@@ -27,11 +24,13 @@
     {/if}
   {/foreach}
   </ul>
-{if $error == 1}
-  <div class="error">
-{else}
-  <div>
-{/if}
-    {$content}
-  </div>
+  {if $error == 1}
+    <div id="i18n_content">
+      {include('error.lte')}
+    </div>
+  {else}
+    <div id="i18n_content">
+      {$content}
+    </div>
+  {/if}
 </div>
