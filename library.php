@@ -106,28 +106,17 @@ class manufaktur_I18n {
   }
 
   public function loadLanguage($module_directory, $language, $type=dbManufakturI18nTranslations::TYPE_REGULAR) {
-
-    return true;
-    global $dbI18n;
+  	global $dbI18n;
+    global $dbI18nTrans;
     global $dbI18nSrc;
-    $SQL = sprintf("SELECT %s, %s FROM %s,%s WHERE %s.%s=%s.%s AND %s='%s' AND %s='%s' AND %s='%s' AND %s='%s'",
-        dbManufakturI18n::FIELD_KEY,
-        dbManufakturI18n::FIELD_TRANSLATION,
-        $dbI18n->getTableName(),
-        $dbI18nSrc->getTableName(),
-        $dbI18n->getTableName(),
-        dbManufakturI18n::FIELD_ID,
-        $dbI18nSrc->getTableName(),
-        dbManufakturI18nSources::FIELD_I18N_ID,
-        dbManufakturI18nSources::FIELD_MODULE,
-        $module_directory,
-        dbManufakturI18n::FIELD_LANGUAGE,
-        $language,
-        dbManufakturI18n::FIELD_STATUS,
-        dbManufakturI18n::STATUS_ACTIVE,
-        dbManufakturI18n::FIELD_TYPE,
-        $type
-        );
+    
+    $i18n = $dbI18n->getTableName();
+    $i18nT = $dbI18nTrans->getTableName();
+    $i18nS = $dbI18nSrc->getTableName();
+    
+    $SQL = "SELECT $i18n.i18n_key, $i18nT.trans_translation FROM $i18n,$i18nT,$i18nS WHERE ".
+      "$i18n.i18n_id=$i18nT.i18n_id AND $i18n.i18n_id=$i18nS.i18n_id AND $i18nS.src_module='$module_directory' AND ".
+      "$i18nT.trans_language='$language' AND $i18nT.trans_status='ACTIVE' AND $i18nT.trans_type='REGULAR'";
     $result = array();
     if (!$dbI18n->sqlExec($SQL, $result)) {
       $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $dbI18n->getError()));
@@ -136,7 +125,7 @@ class manufaktur_I18n {
     foreach ($result as $item) {
       if (isset(self::$language_array[$item[dbManufakturI18n::FIELD_KEY]]))
         unset(self::$language_array[$item[dbManufakturI18n::FIELD_KEY]]);
-      self::$language_array[$item[dbManufakturI18n::FIELD_KEY]] = $item[dbManufakturI18n::FIELD_TRANSLATION];
+      self::$language_array[$item[dbManufakturI18n::FIELD_KEY]] = $item[dbManufakturI18nTranslations::FIELD_TRANSLATION];
     }
   } // loadLanguage()
 
@@ -159,6 +148,17 @@ class manufaktur_I18n {
     }
     return $translate;
   } // I18n()
+  
+  /**
+   * This is a dummy function, needed to register strings which should not translated
+   * yet but added to the database. The function returns the string without any change.
+   * 
+   * @param string $translate
+   * @return string $translate
+   */
+  public function I18n_Register($translate) {
+  	return $translate;
+  } // I18n_Register()
 
   /**
    * This function is used to indicate language strings, which should not translated

@@ -322,8 +322,7 @@ class I18n_Dialog {
    * number, module name and filename in the $result array.
    *
    * @param string $file_path
-   * @param
-   *          reference array $result
+   * @param reference array $result
    * @return boolean
    */
   protected function parseSourceFile($file_path, &$result = array()) {
@@ -341,7 +340,8 @@ class I18n_Dialog {
     $matches = array();
     // first run: get only matches for "I18n"
     for($i = 0; $i < count($tokens); $i++) {
-      if (is_array($tokens[$i]) && (token_name($tokens[$i][0]) == 'T_STRING') && ($tokens[$i][1] == 'I18n')) $matches[] = $i;
+      if (is_array($tokens[$i]) && (token_name($tokens[$i][0]) == 'T_STRING') && 
+      		(($tokens[$i][1] == 'I18n') || ($tokens[$i][1] == 'I18n_Register'))) $matches[] = $i;
     }
     foreach ($matches as $match) {
       $parensis_open = 0;
@@ -504,8 +504,7 @@ class I18n_Dialog {
     global $dbI18nSrc;
     global $dbI18nTrans;
 
-    // first thing we have to do: set the existing language entries to "backup"
-    // status
+    // first thing we have to do: set the existing language entries to "backup" status
 
     $check = self::getDirectoryTree($directory, array(
       'php',
@@ -536,18 +535,19 @@ class I18n_Dialog {
 
     foreach ($translation as $entry) {
       $key = addslashes($entry['key']);
-      $SQL = "SELECT `i18n_id` FROM " . $dbI18n->getTableName() . " WHERE `i18n_key`='$key' AND (`i18n_status`='ACTIVE' OR `i18n_status`='IGNORE')";
-      /*
-       * $SQL = sprintf("SELECT `%s` FROM %s WHERE `%s`='%s'",
-       * dbManufakturI18n::FIELD_ID, $dbI18n->getTableName(),
-       * dbManufakturI18n::FIELD_KEY, addslashes($entry['key']) );
-       */
+      $SQL = "SELECT `i18n_id`, `i18n_key` FROM " . $dbI18n->getTableName() . " WHERE `i18n_key`='$key' AND (`i18n_status`='ACTIVE' OR `i18n_status`='IGNORE')";
       $result = array();
       if (!$dbI18n->sqlExec($SQL, $result)) {
         $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $dbI18n->getError()));
         return false;
       }
+      
+      $add = false;
       if (count($result) > 0) {
+      	$add = ($result[0]['i18n_key'] == $key) ? false : true;
+      }
+      
+      if ($add) {
         // entry already exists, keep only the source usage
         $data = array(
           dbManufakturI18nSources::FIELD_I18N_ID => $result[0][dbManufakturI18n::FIELD_ID],
@@ -606,6 +606,9 @@ class I18n_Dialog {
   } // scanDirectory()
 
   protected function dlgTools() {
+  	$result = array();
+  	//$this->parseSourceFile(LEPTON_PATH.'/modules/kit_cronjob/class.cronjob.php', $result);
+  	$this->scanDirectory(LEPTON_PATH.'/modules/kit_cronjob');
     return __METHOD__;
   } // dlgTools()
 
