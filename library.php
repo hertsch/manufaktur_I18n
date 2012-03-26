@@ -160,4 +160,18 @@ class manufaktur_I18n {
     return $translate;
   } // I18n()
 
+  /**
+   * This function is used to indicate language strings, which should not translated
+   * yet but registered for the database - this is usefull i.e. to transmit original
+   * language strings from the program to the template, process them and translate
+   * at output.
+   * I18n_Register() simply return the unchanged $language string
+   *
+   * @param string $translate
+   * @return string $translate
+   */
+  public function I18n_Register($translate) {
+    return $translate;
+  } // I18n_Register()
+
 } // class manufaktur_I18n
