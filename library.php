@@ -34,8 +34,9 @@ if (defined('WB_PATH')) {
 
 // load language depending onfiguration
 if (!file_exists(WB_PATH.'/modules/manufaktur_i18n/languages/' . LANGUAGE . '.cfg.php')) {
-  require_once(WB_PATH .'/modules/manufaktur_i18n/languages/DE.cfg.php');
-} else {
+  require_once(WB_PATH .'/modules/manufaktur_i18n/languages/EN.cfg.php');
+}
+else {
   require_once(WB_PATH .'/modules/manufaktur_i18n/languages/' .LANGUAGE .'.cfg.php');
 }
 
