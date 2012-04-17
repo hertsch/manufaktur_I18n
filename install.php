@@ -32,22 +32,26 @@ if (defined('WB_PATH')) {
 }
 // end include class.secure.php
 
-require_once WB_PATH.'/modules/manufaktur_i18n/class.i18n.php';
+require_once WB_PATH.'/modules/manufaktur_i18n/library.php';
 
 global $admin;
 
 $tables = array(
     'dbManufakturI18n',
     'dbManufakturI18nSources',
-    'dbManufakturI18nTranslations'
+    'dbManufakturI18nTranslations',
+    'dbManufakturI18nLanguages'
     );
 $error = '';
 
 foreach ($tables as $table) {
   $create = null;
   $create = new $table();
-  if (!$create->sqlTableExists()) {
-    if (!$create->sqlCreateTable()) {
+  if (!$create->createTable()) {
+    $error .= sprintf('[INSTALLATION %s] %s', $table, $create->getError());
+  }
+  if ($table == 'dbManufakturI18nLanguages') {
+    if (!$create->readLanguageCSV()) {
       $error .= sprintf('[INSTALLATION %s] %s', $table, $create->getError());
     }
   }

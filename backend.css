@@ -1,0 +1,314 @@
+/*
+ * manufakturI18n
+ *
+ * @author Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
+ * @link http://phpmanufaktur.de/kit_cronjob
+ * @copyright 2012
+ * @license http://www.gnu.org/licenses/gpl.html GNU Public License (GPL)
+ * @version $Id$
+ */
+
+#i18n_container {
+  font-family: Verdana, Arial, sans-serif;
+  font-size: 10px;
+  font-weight: normal;
+  margin: 0;
+  padding: 0;
+  color: #363636;
+  background-color: transparent;
+  width: 900px;
+  height: auto;
+}
+#i18n_container input {
+  -moz-appearance: none;
+}
+#i18n_settings_container > .navigation,
+#i18n_container > .navigation {
+  padding: 3px 0 3px 10px;
+  margin: 15px 0 0 0;
+  border-bottom: 1px solid #ddd;
+  list-style-type: none;
+  text-align: left;
+}
+#i18n_settings_container > .navigation li,
+#i18n_container > .navigation li {
+  display: inline;
+  margin: 0;
+  padding: 0;
+}
+#i18n_settings_container > .navigation li a
+#i18n_container > .navigation li a {
+  text-decoration: none;
+  padding: 3px 7px;
+  margin: 0;
+  border: 1px solid #dddddd;
+  border-bottom: none;
+}
+#i18n_settings_container > .navigation li a:link,
+#i18n_settings_container > .navigation li a:visited,
+#i18n_container > .navigation li a:link,
+#i18n_container > .navigation li a:visited {
+  color: #fff;
+  background-color: #969696;
+}
+#i18n_settings_container > .navigation li a:hover,
+#i18n_settings_container > .navigation li a:active,
+#i18n_container > .navigation li a:hover,
+#i18n_container > .navigation li a:active {
+  background-color: #363636;
+  color: #fff;
+}
+#i18n_settings_container > .navigation li.selected a,
+#i18n_container > .navigation li.selected a { 
+  position: relative;
+  top: 1px;
+  padding-top: 4px;
+  color: #363636;
+  background-color: #fff;
+  font-weight: bold;
+}
+#i18n_import_xml,
+#i18n_settings_languages,
+#i18n_about,
+#i18n_edit {
+  background-image: url(images/background/edit.png);
+  background-position: top right;
+  background-repeat: no-repeat;
+  background-color: transparent;
+  margin: 0;
+  padding: 5px 10px 20px 10px;
+}
+#i18n_about {
+  background-image: none;
+}
+#i18n_settings_languages {
+  background-image: url(images/background/languages.png);
+}
+#i18n_import_xml {
+  background-image: url(images/background/xml-import.png);
+}
+.i18n_submit {
+  margin: 20px 0 0 0;
+  padding: 0 0 0 20%;
+}
+.edit_clear {
+  clear: both;
+  width: 100%;
+  height: 1px;
+}
+.edit_container {
+  width: 868px;
+  padding: 5px;
+  margin: 10px 0 10px 0;
+  font-size: 9px;
+}
+.edit_container.flip {
+  border: 1px solid #c9c9c9;
+  color: #363636;
+  background-color: #E7DDC1;
+} 
+.edit_container.flop {
+  border: 1px solid #969696;
+  color: #363636;
+  background-color: #D6C495;
+}
+.edit_container.flip fieldset,
+.edit_container.flop fieldset {
+  background-color: transparent;
+  border: 1px solid #969696;
+  margin: 5px 0 0 0;
+  padding: 10px 5px;
+}
+.edit_container textarea {
+  font-size: 9px;
+  height: 30px;
+  border: 1px solid #fff;
+  background-color: #fff;
+}
+.ec_top {
+  width: 100%;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  font-size: 9px;
+}
+.ec_key {
+  width: 100%;
+  padding: 0;
+  font-weight: bold;
+  margin: 0;
+}
+.ec_key legend {
+  font-weight: normal;
+}
+.ec_translation {
+  margin: 0;
+  padding: 0;
+  
+}
+.ec_translation textarea {
+  width: 99%;
+  font-size: 11px;
+  height: 32px;
+}
+.ec_description textarea {
+  width: 100%;
+  font-size: 9px;
+  height: 23px;
+}
+.ec_custom textarea {
+  width: 100%;
+  font-size: 9px;
+  height: 30px;
+  background-color: transparent;
+  border: 1px solid #fff;
+}
+.ec_value_is_empty,
+.ec_label_quality,
+.ec_value_quality,
+.ec_label_author,
+.ec_value_author,
+.ec_label_timestamp,
+.ec_value_timestamp,
+.ec_label_id,
+.ec_value_id,
+.ec_label_last_sync,
+.ec_value_last_sync,
+.ec_label_status,
+.ec_value_status {
+  float: left;
+  margin: 0;
+  padding: 0 10px 0 0;
+}
+.ec_value_id {
+  font-weight: bold;
+}
+.ec_value_author,
+.ec_value_timestamp,
+.ec_value_id,
+.ec_value_last_sync,
+.ec_value_status {
+  font-style: italic;
+}
+.ec_value_is_empty {
+  font-style: italic;
+}
+.ec_value_is_empty input {
+  float: left;
+  font-size: 9px;
+  padding: 0;
+  margin: 0 5px 0 0;
+  border: 1px solid red;
+}
+.ec_value_quality select {
+  font-size: 9px;
+  margin: 0;
+  padding: 0;
+}
+.ec_label_description {
+  float: left;
+  width: 100px;
+  font-size: 9px;
+  font-weight: normal;
+  font-style: italic;
+}
+.ec_value_description {
+  float: left;
+  width: 430px;
+}
+.ec_value_description textarea {
+  font-size: 9px;
+  font-style: italic;
+  background-color: transparent;
+  border: 1px solid #fff;
+}
+.ec_separator {
+  height: 10px;
+}
+.ec_left {
+  float: left;
+  width: 550px;
+  margin: 0 10px 0 0;
+  padding: 0;
+}
+.ec_right {
+  float: left;
+  width: 308px;
+  margin: 0;
+  padding: 0;
+}
+.language_container {
+  width: 868px;
+  padding: 5px;
+  margin: 5px 0 5px 0;
+  font-size: 9px;
+}
+.language_container.flip {
+  border: 1px solid #c9c9c9;
+  color: #363636;
+  background-color: #E7DDC1;
+} 
+.language_container.flop {
+  border: 1px solid #969696;
+  color: #363636;
+  background-color: #D6C495;
+}
+.lang_label_xml,
+.lang_value_xml,
+.lang_label_delete,
+.lang_value_delete,
+.lang_label_english,
+.lang_value_english,
+.lang_label_iso,
+.lang_value_iso,
+.lang_label_local,
+.lang_value_local {
+  float: left;
+}
+.lang_label_xml,
+.lang_label_delete,
+.lang_label_english,
+.lang_label_iso,
+.lang_label_local {
+  width: 50px;
+  text-align: right;
+  padding: 0;
+  margin: 0 5px 0 0;
+  font-style: italic;
+  color: #969696;
+  background-color: transparent;
+}
+.lang_label_xml,
+.lang_label_delete {
+  width: 150px;
+}
+.lang_value_delete,
+.lang_value_iso {
+  width: 30px;
+  margin: 0;
+  padding: 0;
+  font-weight: bold;
+}
+.lang_value_delete input {
+  -moz-appearance: none;
+  border: 1px solid #969696;
+  margin: 0;
+  padding: 0;
+}
+.lang_value_xml,
+.lang_value_local,
+.lang_value_english {
+  width: 200px;
+  margin: 0;
+  padding: 0;
+  font-weight: normal;
+}
+.lang_export,
+.lang_add_entry {
+  margin: 15px 0 10px 0;
+  padding: 0;
+}
+.lang_export fieldset,
+.lang_add_entry fieldset {
+  padding: 10px;
+}

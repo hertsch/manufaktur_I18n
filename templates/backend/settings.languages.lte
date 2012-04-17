@@ -1,0 +1,75 @@
+{*
+ * manufakturI18n
+ *
+ * @author Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
+ * @link http://phpmanufaktur.de
+ * @copyright 2012
+ * @license http://www.gnu.org/licenses/gpl.html GNU Public License (GPL)
+ * @version $Id$
+ *
+ * Please consult the Dwoo Documentation & WIKI to get further informations 
+ * and hints for the usage of the Dwoo template engine.
+ *
+ * @link http://wiki.dwoo.org/
+ *
+ * Use {dump()} to get a list of all in this template available variables!
+ *}
+<div id="i18n_settings_languages">
+  <form name="{$form.name}" action="{$form.action}" method="post">
+    <input type="hidden" name="{$action.name}" value="{$action.value}" />
+    <input type="hidden" name="{$sub_action.name}" value="{$sub_action.value}" />
+    <input type="hidden" name="{$request_items.name}" value="{$request_items.value}" />
+    <h2>{I18n('Available languages')}</h2>
+    <div class="{if count_characters($message.text) > 0}message{else}intro{/if}">
+      {if count_characters($message.text) > 0}
+        {$message.text}
+      {else}
+        {I18n('Add, remove, import or export the available languages for manufaktur_I18n.')}
+      {/if}
+    </div>
+    {cycle values=array('flop','flip') print=false}
+    {foreach $items item}
+    <div class="language_container {cycle}">
+      <div class="lang_label_iso">{I18n('ISO')}</div>
+      <div class="lang_value_iso">{upper($item.iso)}</div>
+      <div class="lang_label_local">{I18n('Local')}</div>
+      <div class="lang_value_local">{$item.local}</div>
+      <div class="lang_label_english">{I18n('English')}</div>
+      <div class="lang_value_english">{$item.english}</div>
+      <div class="lang_label_delete">{I18n('Delete entry')}</div>
+      <div class="lang_value_delete"><input type="checkbox" name="{$item.name}" value="1" /></div>
+      <div class="edit_clear"></div>
+    </div>
+    {/foreach}
+    <div class="lang_add_entry">
+      <fieldset>
+        <legend>{I18n('Add a new language')}</legend>
+        <div class="lang_label_iso">{I18n('ISO')}</div>
+        <div class="lang_value_iso"><input tpye="text" name="{$add.iso.name}" value="{$add.iso.value}" /></div>
+        <div class="lang_label_local">{I18n('Local')}</div>
+        <div class="lang_value_local"><input type="text" name="{$add.local.name}" value="{$add.local.value}" /></div>
+        <div class="lang_label_english">{I18n('English')}</div>
+        <div class="lang_value_english"><input type="text" name="{$add.english.name}" value="{$add.english.value}" /></div>
+        <div class="edit_clear"></div>
+      </fieldset>
+    </div>
+    <div class="lang_export">
+      <fieldset>
+        <legend>{I18n('Import / Export')}</legend>
+        <div class="lang_label_xml">{I18n('Languages')}</div>
+        <div class="lang_value_xml">
+          <select name="{$xml.name}">
+            {foreach $xml.options option}
+            <option value="{$option.value}">{$option.text}</option>
+            {/foreach}
+          </select>
+        </div>
+        <div class="edit_clear"></div>
+      </fieldset>
+    </div>
+    <div class="i18n_submit">
+      <input type="submit" value="{I18n('OK')}" />&nbsp;
+      <input type="button" value="{I18n('Abort')}" onclick="javascript: window.location = '{$form.action}'; return false;" />
+    </div>
+  </form>
+</div>

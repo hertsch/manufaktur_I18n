@@ -1,0 +1,121 @@
+{*
+ * manufakturI18n
+ *
+ * @author Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
+ * @link http://phpmanufaktur.de
+ * @copyright 2012
+ * @license http://www.gnu.org/licenses/gpl.html GNU Public License (GPL)
+ * @version $Id$
+ *
+ * Please consult the Dwoo Documentation & WIKI to get further informations 
+ * and hints for the usage of the Dwoo template engine.
+ *
+ * @link http://wiki.dwoo.org/
+ *
+ * Use {dump()} to get a list of all in this template available variables!
+ *}
+<div id="i18n_edit">
+  <form name="{$form.name}" action="{$form.action}" method="post">
+    <input type="hidden" name="{$action.name}" value="{$action.value}" />
+    <input type="hidden" name="{$request_items.name}" value="{$request_items.value}" />
+    <h2>{I18n('Edit languages')}</h2>
+    <div class="{if count_characters($message.text) > 0}message{else}intro{/if}">
+      {if count_characters($message.text) > 0}
+        {$message.text}
+      {else}
+        {I18n('Edit language.')}
+      {/if}
+    </div>
+    {cycle values=array('flop','flip') print=false}
+    {foreach $items item}
+    <div class="edit_container {cycle}">
+      <div class="ec_top">
+        <div class="ec_label_id">{I18n('ID')}</div>
+        <div class="ec_value_id">{string_format($item.key.id, '%05d')}</div>
+        <div class="ec_label_last_sync">{I18n('Last sync')}</div>
+        <div class="ec_value_last_sync">{$item.key.last_sync}</div>
+        <div class="ec_label_status">{I18n('Status')}</div>
+        <div class="ec_value_status">{I18n($item.key.status)}</div>
+      </div>
+      <div class="edit_clear"></div>
+      <div class="ec_left">
+        <div class="ec_key">
+          <fieldset>
+            <legend>{I18n('I18n <b>KEY</b>')}</legend>
+            <div class="ec_key">
+              {$item.key.value}
+            </div>
+            {if $settings.edit_descriptions == 1}
+            <div class="ec_description">
+              <div class="ec_label_description">{I18n('I18n Description')}</div>
+              <div class="ec_value_description">
+                <textarea name="{$item.description.name}">{$item.description.value}</textarea>
+              </div>
+              <div class="edit_clear"></div>
+            </div>
+            {elseif count_characters($item.description.value) > 0}
+            <div class="ec_description">
+              <div class="ec_label_description">{I18n('I18n Description')}</div>
+              <div class="ec_value_description">{$item.description.value}</div>
+              <div class="edit_clear"></div>
+            </div>
+            {/if}
+          </fieldset>
+        </div>
+        <div class="ec_translation">
+          <fieldset>
+            <legend>{I18n('Translation to <b>{{ language }}</b>', array(language=$language.local))}</legend>
+            <textarea name="{$item.translation.name}">{$item.translation.value}</textarea>
+            <div class="ec_separator"></div>
+            <div class="ec_value_is_empty">
+              <input type="checkbox" name="{$item.translation.is_empty.name}" value="1"{if $item.translation.is_empty.value == 1} checked="checked"{/if} /> {I18n('empty translation')} 
+            </div>
+            <div class="ec_label_author">{I18n('Author')}</div>
+            <div class="ec_value_author">{$item.translation.author}</div>
+            <div class="ec_label_timestamp">{I18n('Last change')}</div>
+            <div class="ec_value_timestamp">{$item.translation.timestamp}</div>
+            <div class="ec_label_quality">{I18n('Quality')}</div>
+            <div class="ec_value_quality">
+              <select name="{$item.translation.quality.name}">
+                {for i 0 100 5}
+                <option value="{$i}"{if $i == $item.translation.quality.value} selected="selected"{/if}>{string_format($i, '%3s')}</option>
+                {/for}
+              </select>
+            </div>
+            <div class="edit_clear"></div>
+          </fieldset>
+        </div>
+      </div>
+      <div class="ec_right">
+        {if $settings.show_sources == 1}
+        <div class="ec_sources">
+          <fieldset>
+            <legend>{I18n('Sources')}</legend>
+            <div class="ecs_files">
+              {foreach $item.sources source}
+                [{string_format($source.line, '%05d')}] {$source.file}<br />
+              {/foreach}
+            </div>
+          </fieldset>
+        </div>
+        {/if}
+        <div class="ec_custom">
+          <fieldset>
+            <legend>{I18n('Custom translation')}</legend>
+            <textarea name="{$item.custom.name}">{$item.custom.value}</textarea>
+            <div class="ec_separator"></div>
+            <div class="ec_value_is_empty">
+              <input type="checkbox" name="{$item.custom.is_empty.name}" value="1"{if $item.custom.is_empty.value == 1} checked="checked"{/if} /> {I18n('empty translation')} 
+            </div>
+          </fieldset>
+        </div>
+      </div>
+      <div class="edit_clear"></div>
+    </div>
+    {/foreach}
+    <div class="i18n_submit">
+      <input type="submit" value="{I18n('OK')}" />&nbsp;
+      <input type="button" value="{I18n('Abort')}" onclick="javascript: window.location = '{$form.action}'; return false;" />
+    </div>
+  </form>
+</div>

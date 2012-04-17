@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmilg version="0.10">
+  <language iso="ar">
+    <local>العربية</local>
+    <english>Arabic</english>
+  </language>
+  <language iso="az">
+    <local>Azərbaycan</local>
+    <english>Azerbaijani</english>
+  </language>
+  <language iso="bg">
+    <local>Български</local>
+    <english>Bulgarian</english>
+  </language>
+  <language iso="bs">
+    <local>Bosanski</local>
+    <english>Bosnian</english>
+  </language>
+  <language iso="ca">
+    <local>Català</local>
+    <english>Catalan</english>
+  </language>
+  <language iso="cs">
+    <local>Česky</local>
+    <english>Czech</english>
+  </language>
+  <language iso="da">
+    <local>Dansk</local>
+    <english>Danish</english>
+  </language>
+  <language iso="de">
+    <local>Deutsch</local>
+    <english>German</english>
+  </language>
+  <language iso="el">
+    <local>Ελληνικά</local>
+    <english>Greek</english>
+  </language>
+  <language iso="en">
+    <local>English</local>
+    <english>English</english>
+  </language>
+  <language iso="es">
+    <local>Español</local>
+    <english>Spanish</english>
+  </language>
+  <language iso="et">
+    <local>Eesti</local>
+    <english>Estonian</english>
+  </language>
+  <language iso="fi">
+    <local>Suomi</local>
+    <english>Finnish</english>
+  </language>
+  <language iso="fr">
+    <local>Français</local>
+    <english>French</english>
+  </language>
+  <language iso="he">
+    <local>עברית</local>
+    <english>Hebrew</english>
+  </language>
+  <language iso="hr">
+    <local>Hrvatski</local>
+    <english>Croatian</english>
+  </language>
+  <language iso="hu">
+    <local>Magyar</local>
+    <english>Hungarian</english>
+  </language>
+  <language iso="hy">
+    <local>Հայերեն</local>
+    <english>Armenian</english>
+  </language>
+  <language iso="is">
+    <local>Íslenska</local>
+    <english>Icelandic</english>
+  </language>
+  <language iso="it">
+    <local>Italiano</local>
+    <english>Italian</english>
+  </language>
+  <language iso="ja">
+    <local>日本語</local>
+    <english>Japanese</english>
+  </language>
+  <language iso="ko">
+    <local>한국어</local>
+    <english>Korean</english>
+  </language>
+  <language iso="lt">
+    <local>Lietuvių</local>
+    <english>Lithuanian</english>
+  </language>
+  <language iso="lv">
+    <local>Latviešu</local>
+    <english>Latvian</english>
+  </language>
+  <language iso="mk">
+    <local>Makedonski</local>
+    <english>Macedonian</english>
+  </language>
+  <language iso="mn">
+    <local>Монгол</local>
+    <english>Mongolian</english>
+  </language>
+  <language iso="mt">
+    <local>Malti</local>
+    <english>Maltese</english>
+  </language>
+  <language iso="nl">
+    <local>Nederlands</local>
+    <english>Dutch</english>
+  </language>
+  <language iso="no">
+    <local>Norsk</local>
+    <english>Norwegian</english>
+  </language>
+  <language iso="pl">
+    <local>Polski</local>
+    <english>Polish</english>
+  </language>
+  <language iso="pt">
+    <local>Português</local>
+    <english>Portuguese</english>
+  </language>
+  <language iso="ro">
+    <local>Română</local>
+    <english>Romanian</english>
+  </language>
+  <language iso="ru">
+    <local>Русский</local>
+    <english>Russian</english>
+  </language>
+  <language iso="sk">
+    <local>Slovenčina</local>
+    <english>Slovak</english>
+  </language>
+  <language iso="sl">
+    <local>Slovenščina</local>
+    <english>Slovenian</english>
+  </language>
+  <language iso="sq">
+    <local>Shqip</local>
+    <english>Albanian</english>
+  </language>
+  <language iso="sr">
+    <local>Српски / Srpski</local>
+    <english>Serbian</english>
+  </language>
+  <language iso="sv">
+    <local>Svenska</local>
+    <english>Swedish</english>
+  </language>
+  <language iso="sz">
+    <local>Crnogorski</local>
+    <english>Montenegrin</english>
+  </language>
+  <language iso="th">
+    <local>ไทย</local>
+    <english>Thai</english>
+  </language>
+  <language iso="tr">
+    <local>Türkçe</local>
+    <english>Turkish</english>
+  </language>
+  <language iso="uk">
+    <local>Українська</local>
+    <english>Ukrainian</english>
+  </language>
+  <language iso="uz">
+    <local>O‘zbek</local>
+    <english>Uzbek</english>
+  </language>
+  <language iso="vi">
+    <local>Tiếng Việt</local>
+    <english>Vietnamese</english>
+  </language>
+  <language iso="zh">
+    <local>中文</local>
+    <english>Chinese</english>
+  </language>
+</xmilg>

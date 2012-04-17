@@ -1,0 +1,26 @@
+{*
+ * kitOffer
+ *
+ * @author Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
+ * @link http://phpmanufaktur.de/kit_cronjob
+ * @copyright 2012
+ * @license http://www.gnu.org/licenses/gpl.html GNU Public License (GPL)
+ * @version $Id$
+ *
+ * Please consult the Dwoo Documentation & WIKI to get further informations 
+ * and hints for the usage of the Dwoo template engine.
+ *
+ * @link http://wiki.dwoo.org/
+ *
+ * Use {dump()} to get a list of all in this template available variables!
+ *}
+<div id="i18n_settings_container">
+  <ul class="navigation">
+  {foreach $navigation nav}
+    <li{if $nav.active == 1} class="selected"{/if} title="{I18n($nav.text)}">
+      <a href="{$nav.url}">{I18n($nav.text)}</a>
+    </li>
+  {/foreach}
+  </ul>
+  {$content}
+</div>

@@ -33,49 +33,82 @@ else {
 }
 // end include class.secure.php
 
-// load language depending onfiguration
-if (!file_exists(WB_PATH . '/modules/' . basename(dirname(__FILE__)) . '/languages/' . LANGUAGE . '.cfg.php')) {
-  require_once (WB_PATH . '/modules/' . basename(dirname(__FILE__)) . '/languages/DE.cfg.php');
-}
-else {
-  require_once (WB_PATH . '/modules/' . basename(dirname(__FILE__)) . '/languages/' . LANGUAGE . '.cfg.php');
-}
+// wb2lepton compatibility
+if (!defined('LEPTON_PATH'))
+  require_once WB_PATH . '/modules/' . basename(dirname(__FILE__)) . '/wb2lepton.php';
 
-if (!class_exists('manufaktur_I18n')) require_once WB_PATH . '/modules/manufaktur_i18n/library.php';
+if (!class_exists('manufaktur_I18n'))
+  require_once LEPTON_PATH . '/modules/manufaktur_i18n/library.php';
 global $lang;
-if (!is_object($lang)) $lang = new manufaktur_I18n();
+if (!is_object($lang))
+  $lang = new manufaktur_I18n(LANGUAGE);
 
-class I18n_Dialog {
+if (!class_exists('manufakturConfigDialog')) {
+  if (file_exists(LEPTON_PATH.'/modules/manufaktur_config/class.dialog.php')) {
+    require_once LEPTON_PATH.'/modules/manufaktur_config/class.dialog.php';
+  }
+  else {
+    trigger_error('manufaktur_I18n needs the configuration utility '.
+        '<a href="http://phpmanufaktur.de/cms/downloads.php" traget="_blank">'.
+        'manufakturConfig</a>. Please install and try again!', E_USER_ERROR);
+  }
+}
+
+class manufakturI18nDialog {
 
   const REQUEST_ACTION = 'i18n_act';
+  const REQUEST_SUB_ACTION = 'i18n_sub';
+  const REQUEST_SUB_SUB_ACTION = 'i18n_ssa';
+  const REQUEST_ITEMS = 'i18n_its';
+  const REQUEST_LANGUAGE = 'i18n_lang';
+  const REQUEST_XML_FILE = 'xmlf';
+
 
   const ACTION_DEFAULT = 'def';
   const ACTION_ABOUT = 'abt';
   const ACTION_TOOLS = 'tls';
   const ACTION_EDIT = 'edt';
+  const ACTION_EDIT_CHECK = 'edtc';
+  const ACTION_SETTINGS = 'set';
+  const ACTION_SETTING_GENERAL = 'stg';
+  const ACTION_SETTING_USERS = 'stu';
+  const ACTION_SETTING_LANGUAGES = 'stl';
+  const ACTION_SETTING_LANGUAGES_CHECK = 'stlc';
+  const ACTION_IMPORT_LANGUAGE = 'ilg';
 
-  private $message = '';
-  private $error = '';
-  private $tab_navigation_array = array();
-  private $module_directory = NULL;
-  private $page_link = NULL;
-  private $img_url = NULL;
-  protected $lang = NULL;
+  private static $message = '';
+  private static $error = '';
+  private static $tab_navigation_array = array();
+  private static $tab_settings_array = array();
+  private static $module_directory = null;
+  private static $module_name = null;
+  private static $dialog_link = null;
+  private static $img_url = null;
+  protected $lang = null;
+  protected $config = null;
 
-  public function __construct($module_directory) {
+  public function __construct($module_directory, $module_name, $dialog_link) {
     global $lang;
-    $this->module_directory = $module_directory;
-    $this->page_link = ADMIN_URL . '/admintools/tool.php?tool=' . $module_directory;
-    $this->img_url = WB_URL . '/modules/' . basename(dirname(__FILE__)) . '/images/';
+    self::$module_directory = $module_directory;
+    self::$module_name = $module_name;
+    self::$dialog_link = $dialog_link;
+    self::$img_url = WB_URL.'/modules/'.basename(dirname(__FILE__)).'/images/';
     date_default_timezone_set(CFG_TIME_ZONE);
     $this->lang = $lang;
     // don't translate the Tab Strings here - this will be done in the template!
-    $this->tab_navigation_array = array(
+    self::$tab_navigation_array = array(
         self::ACTION_EDIT => 'Edit',
         self::ACTION_TOOLS => 'Tools',
+        self::ACTION_SETTINGS => 'Settings',
         self::ACTION_ABOUT => 'About'
     );
-  }
+    self::$tab_settings_array = array(
+        self::ACTION_SETTING_GENERAL => 'General',
+        //self::ACTION_SETTING_USERS => 'User',
+        self::ACTION_SETTING_LANGUAGES => 'Languages'
+        );
+    $this->config = new manufakturConfig('manufaktur_i18n');
+  } // __construct()
 
   /**
    * Set $this->error to $error
@@ -83,7 +116,7 @@ class I18n_Dialog {
    * @param $error STR
    */
   protected function setError($error) {
-    $this->error = $error;
+    self::$error = $error;
   } // setError()
 
   /**
@@ -92,7 +125,7 @@ class I18n_Dialog {
    * @return STR $this->error
    */
   public function getError() {
-    return $this->error;
+    return self::$error;
   } // getError()
 
   /**
@@ -101,14 +134,14 @@ class I18n_Dialog {
    * @return BOOL
    */
   public function isError() {
-    return (bool) !empty($this->error);
+    return (bool) !empty(self::$error);
   } // isError
 
   /**
    * Reset Error to empty String
    */
   protected function clearError() {
-    $this->error = '';
+    self::$error = '';
   }
 
   /**
@@ -117,7 +150,7 @@ class I18n_Dialog {
    * @param $message STR
    */
   protected function setMessage($message) {
-    $this->message = $message;
+    self::$message = $message;
   } // setMessage()
 
   /**
@@ -126,7 +159,7 @@ class I18n_Dialog {
    * @return STR $this->message
    */
   public function getMessage() {
-    return $this->message;
+    return self::$message;
   } // getMessage()
 
   /**
@@ -135,7 +168,7 @@ class I18n_Dialog {
    * @return BOOL
    */
   public function isMessage() {
-    return (bool) !empty($this->message);
+    return (bool) !empty(self::$message);
   } // isMessage
 
   /**
@@ -145,7 +178,7 @@ class I18n_Dialog {
    */
   public function getVersion() {
     // read info.php into array
-    $info_text = file(WB_PATH . '/modules/' . basename(dirname(__FILE__)) . '/info.php');
+    $info_text = file(LEPTON_PATH . '/modules/' . basename(dirname(__FILE__)) . '/info.php');
     if ($info_text == false) {
       return -1;
     }
@@ -170,56 +203,58 @@ class I18n_Dialog {
   protected function getTemplate($template, $template_data) {
     global $parser;
 
-    $template_path = WB_PATH . '/modules/' . basename(dirname(__FILE__)) . '/templates/backend/';
+    $template_path = LEPTON_PATH . '/modules/' . basename(dirname(__FILE__)) . '/templates/backend/';
 
     // check if a custom template exists ...
     $load_template = (file_exists($template_path . 'custom.' . $template)) ? $template_path . 'custom.' . $template : $template_path . $template;
     try {
       $result = $parser->get($load_template, $template_data);
     } catch (Exception $e) {
-      $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $this->lang->translate('Error executing the template <b>{{ template }}</b>: {{ error }}', array(
-        'template' => basename($load_template),
-        'error' => $e->getMessage()
-      ))));
+      $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__,
+          $this->lang->I18n('Error executing the template <b>{{ template }}</b>: {{ error }}', array(
+              'template' => basename($load_template),
+              'error' => $e->getMessage()))));
       return false;
     }
     return $result;
   } // getTemplate()
 
   /**
-   * Verhindert XSS Cross Site Scripting
-   *
-   * @param $_REQUEST REFERENCE Array
-   * @return $request
-   */
-  protected function xssPrevent(&$request) {
-    if (is_string($request)) {
-      $request = html_entity_decode($request);
-      $request = strip_tags($request);
-      $request = trim($request);
-      $request = stripslashes($request);
-    }
-    return $request;
-  } // xssPrevent()
-
-  /**
    * Action handler for I18n_Dialog
+   * This function expects that the xssPrevent method will be executed by the
+   * calling backend module!
    *
    * @return string - I18n Dialog
    */
   public function action() {
 
-    $html_allowed = array();
-    foreach ($_REQUEST as $key => $value) {
-      if (strpos($key, 'cfg_') == 0) continue; // ignore config values!
-      if (!in_array($key, $html_allowed)) {
-        $_REQUEST[$key] = $this->xssPrevent($value);
+    if (null == $this->config->getValue('cfgSourcesShow', 'manufaktur_i18n')) {
+      // the configuration settings does not exists
+      $config_xml = LEPTON_PATH.'/modules/manufaktur_i18n/data/config.xml';
+      if (file_exists($config_xml)) {
+        if (!$this->config->readXMLfile($config_xml)) {
+          $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $this->config->getError()));
+          return $this->show(self::ACTION_SETTINGS, '');
+        }
+        else {
+          $this->setMessage($this->config->getMessage());
+        }
+      }
+      else {
+        // fatal error: cant load the config.xml
+        $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__,
+            $this->lang->I18n("Cant't load the configuration file {{ file }}",
+            array('file' => substr($config_xml, strlen(LEPTON_PATH))))));
+        return $this->show(self::ACTION_SETTINGS, '');
       }
     }
 
     $action = isset($_REQUEST[self::REQUEST_ACTION]) ? $_REQUEST[self::REQUEST_ACTION] : self::ACTION_ABOUT;
 
     switch ($action) {
+      case self::ACTION_SETTINGS:
+        $result = $this->show(self::ACTION_SETTINGS, $this->actionSettings());
+        break;
       case self::ACTION_EDIT:
         $result = $this->show(self::ACTION_EDIT, $this->dlgEdit());
         break;
@@ -228,11 +263,39 @@ class I18n_Dialog {
         break;
       case self::ACTION_ABOUT:
       default:
-        $result = $this->show(self::ACTION_ABOUT, $this->dialogAbout());
+        $result = $this->show(self::ACTION_ABOUT, $this->dlgAbout());
         break;
     }
     return $result;
   } // action()
+
+  protected function actionSettings() {
+    if (isset($_REQUEST[self::REQUEST_SUB_SUB_ACTION])) {
+      $action = $_REQUEST[self::REQUEST_SUB_SUB_ACTION];
+    }
+    else {
+      $action = isset($_REQUEST[self::REQUEST_SUB_ACTION]) ? $_REQUEST[self::REQUEST_SUB_ACTION] : self::ACTION_SETTING_GENERAL;
+    }
+    switch ($action) {
+      case self::ACTION_IMPORT_LANGUAGE:
+        $result = $this->showSetting(self::ACTION_SETTING_LANGUAGES, $this->execImportXMLlanguage());
+        break;
+      case self::ACTION_SETTING_LANGUAGES:
+        $result = $this->showSetting(self::ACTION_SETTING_LANGUAGES, $this->dlgSettingLanguages());
+        break;
+      case self::ACTION_SETTING_LANGUAGES_CHECK:
+        $result = $this->showSetting(self::ACTION_SETTING_LANGUAGES, $this->checkSettingLanguages());
+        break;
+      case self::ACTION_SETTING_USERS:
+        $result = $this->showSetting(self::ACTION_SETTING_USERS, $this->dlgSettingUsers());
+        break;
+      case self::ACTION_SETTING_GENERAL:
+      default:
+        $result = $this->showSetting(self::ACTION_SETTING_GENERAL, $this->dlgSettingGeneral());
+        break;
+    }
+    return $result;
+  } // actionSettings()
 
   /**
    * Ausgabe des formatierten Ergebnis mit Navigationsleiste
@@ -244,18 +307,18 @@ class I18n_Dialog {
    */
   protected function show($action, $content) {
     $navigation = array();
-    foreach ($this->tab_navigation_array as $key => $value) {
+    foreach (self::$tab_navigation_array as $key => $value) {
       $navigation[] = array(
         'active' => ($key == $action) ? 1 : 0,
-        'url' => sprintf('%s&%s', $this->page_link, http_build_query(array(
+        'url' => sprintf('%s&%s', self::$dialog_link, http_build_query(array(
           self::REQUEST_ACTION => $key
         ))),
         'text' => $value
       );
     }
     $data = array(
-      'WB_URL' => WB_URL,
-      'IMG_URL' => $this->img_url,
+      'LEPTON_URL' => LEPTON_URL,
+      'IMG_URL' => self::$img_url,
       'navigation' => $navigation,
       'error' => (int) $this->isError(),
       'content' => ($this->isError()) ? $this->getError() : $content
@@ -263,356 +326,457 @@ class I18n_Dialog {
     return $this->getTemplate('body.lte', $data);
   } // show()
 
+  protected function showSetting($action, $content) {
+    $navigation = array();
+    foreach (self::$tab_settings_array as $key => $value) {
+      $navigation[] = array(
+          'active' => ($key == $action) ? 1 : 0,
+          'url' => sprintf('%s&amp;%s',
+              self::$dialog_link,
+              http_build_query(array(
+                  self::REQUEST_ACTION => self::ACTION_SETTINGS,
+                  self::REQUEST_SUB_ACTION => $key
+                  ))),
+          'text' => $value
+          );
+    }
+    $data = array(
+        'content' => $content,
+        'navigation' => $navigation,
+        'IMG_URL' => self::$img_url
+        );
+    return $this->getTemplate('settings.lte', $data);
+  } // showSetting()
+
   /**
    * About Dialog for the I18n_Dialog
    *
    * @return string dialog
    */
-  protected function dialogAbout() {
+  protected function dlgAbout() {
     $data = array(
       'version' => sprintf('%01.2f', $this->getVersion()),
-      'img_url' => $this->img_url,
+      'img_url' => self::$img_url,
       'release_notes' => file_get_contents(WB_PATH . '/modules/' . basename(dirname(__FILE__)) . '/info.txt')
     );
     return $this->getTemplate('about.lte', $data);
-  } // dialogAbout();
-
-  /**
-   * Iterate directory tree very efficient
-   * Function postet from donovan.pp@gmail.com at
-   * http://www.php.net/manual/de/function.scandir.php
-   *
-   * @param string $directory
-   * @return array - directoryTree
-   */
-  public static function getDirectoryTree($directory, $extensions_only = NULL) {
-    if (substr($directory, -1) == "/") $directory = substr($directory, 0, -1);
-    $path = array();
-    $stack = array();
-    $stack[] = $directory;
-    while ($stack) {
-      $thisdir = array_pop($stack);
-      if (false !== ($dircont = scandir($thisdir))) {
-        $i = 0;
-        while (isset($dircont[$i])) {
-          if ($dircont[$i] !== '.' && $dircont[$i] !== '..') {
-            $current_file = "{$thisdir}/{$dircont[$i]}";
-            if (is_file($current_file)) {
-              if ($extensions_only == NULL) {
-                $path[] = "{$thisdir}/{$dircont[$i]}";
-              }
-              else {
-                $path_info = pathinfo("{$thisdir}/{$dircont[$i]}");
-                if (isset($path_info['extension']) && in_array($path_info['extension'], $extensions_only)) $path[] = "{$thisdir}/{$dircont[$i]}";
-              }
-            }
-            elseif (is_dir($current_file)) {
-              $stack[] = $current_file;
-            }
-          }
-          $i++;
-        }
-      }
-    }
-    return $path;
-  } // getDirectoryTree()
-
-  /**
-   * Parses a PHP file for I18n() functions and gather the text parameter, line
-   * number, module name and filename in the $result array.
-   *
-   * @param string $file_path
-   * @param reference array $result
-   * @return boolean
-   */
-  protected function parseSourceFile($file_path, &$result = array()) {
-    if (false === ($source = file_get_contents($file_path))) {
-      $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $this->lang->I18n("Can't get file content: {{ file }}", array(
-        'file' => $file_path
-      ))));
-      return false;
-    }
-    $path = substr($file_path, strlen(WB_PATH));
-    $module = dirname(substr($file_path, strlen(WB_PATH . '/modules/')));
-    if (strpos($module, DIRECTORY_SEPARATOR) > 0) $module = substr($module, 0, strpos($module, DIRECTORY_SEPARATOR));
-    $file = basename($file_path);
-    $tokens = token_get_all($source);
-    $matches = array();
-    // first run: get only matches for "I18n"
-    for($i = 0; $i < count($tokens); $i++) {
-      if (is_array($tokens[$i]) && (token_name($tokens[$i][0]) == 'T_STRING') && 
-      		(($tokens[$i][1] == 'I18n') || ($tokens[$i][1] == 'I18n_Register'))) $matches[] = $i;
-    }
-    foreach ($matches as $match) {
-      $parensis_open = 0;
-      $concat = false;
-      $text = '';
-      $has_content = false;
-      for($i = $match; $i < count($tokens); $i++) {
-        if ($parensis_open < 1) {
-          // first detect the opening parensis!
-          if (is_string($tokens[$i]) && ($tokens[$i] == '(')) {
-            $parensis_open++;
-          }
-        }
-        else {
-          if (is_string($tokens[$i])) {
-            // handle strings
-            if ($tokens[$i] == ')') {
-              $parensis_open--;
-              $concat = false;
-              if ($parensis_open == 0) break;
-            }
-            if ($tokens[$i] == '(') {
-              $concat = false;
-              $parensis_open++;
-            }
-            if ($has_content && ($tokens[$i] == '.')) {
-              $concat = true;
-            }
-          }
-          else {
-            // handle tokens
-            if (token_name($tokens[$i][0]) == 'T_CONSTANT_ENCAPSED_STRING') {
-              if (empty($text)) {
-                $item = trim($tokens[$i][1]);
-                $text = substr($item, 1, strlen($item) - 2);
-                $has_content = true;
-              }
-              elseif ($concat) {
-                $item = trim($tokens[$i][1]);
-                $text .= substr($item, 1, strlen($item) - 2);
-              }
-            }
-          }
-        }
-      }
-      if (!empty($text)) {
-        $result[] = array(
-          'module' => $module,
-          'path' => $path,
-          'file' => $file,
-          'key' => $text,
-          'line' => $tokens[$match][2]
-        );
-      }
-    }
-    return true;
-  } // parseSourceFile()
-
-  /**
-   * Parses a Template file for I18n() functions and gather the text parameter,
-   * line
-   * number, module name and filename in the $result array.
-   *
-   * @param string $file_path
-   * @param
-   *          reference array $result
-   * @return boolean
-   */
-  protected function parseTemplateFile($file_path, &$result = array()) {
-    if (false === ($source = file($file_path))) {
-      $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $this->lang->I18n("Can't get file content: {{ file }}", array(
-        'file' => $file_path
-      ))));
-      return false;
-    }
-    $path = substr($file_path, strlen(WB_PATH));
-    $module = dirname(substr($file_path, strlen(WB_PATH . '/modules/')));
-    if (strpos($module, DIRECTORY_SEPARATOR) > 0) $module = substr($module, 0, strpos($module, DIRECTORY_SEPARATOR));
-    $file = basename($file_path);
-    $line_number = 1;
-    foreach ($source as $line) {
-      $hits = preg_match_all('/{I18n(.?)\((.*?)\)(.?)}/', $line, $matches);
-      if ($hits > 0) {
-        for($i = 0; $i < $hits; $i++) {
-          foreach ($matches[$i] as $match) {
-            if (!empty($match)) {
-              if (preg_match('/(\'(.*)\')|("(.*)")/', $match, $hit) == 1) {
-                $text = trim($hit[0]);
-                $result[] = array(
-                  'module' => $module,
-                  'path' => $path,
-                  'file' => $file,
-                  'key' => substr($text, 1, strlen($text) - 2),
-                  'line' => $line_number
-                );
-              }
-            }
-          }
-        }
-      }
-      $line_number++;
-    }
-    return true;
-  } // parseTemplateFile()
-
-  /**
-   * Delete all entries from all language tables which status is set to $status
-   *
-   * @param string $module
-   * @return boolean - result
-   */
-  public function deleteEntriesByStatus($module, $status) {
-    global $dbI18n;
-    global $dbI18nSrc;
-    global $dbI18nTrans;
-
-    $ti = $dbI18n->getTableName();
-    $tis = $dbI18nSrc->getTableName();
-    $tit = $dbI18nTrans->getTableName();
-
-    $SQL = "DELETE `$ti`,`$tis`,`$tit` FROM `$ti`,`$tis`,`$tit` WHERE " . "`$ti`.`i18n_id`=`$tis`.`i18n_id` AND `$ti`.`i18n_id`=`$tit`.`i18n_id` AND " . "`src_module`='$module' AND `i18n_status`='$status' AND " . "`src_status`='$status' AND `trans_status`='$status'";
-    $result = array();
-    if (!$dbI18n->sqlExec($SQL, $result)) {
-      $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $dbI18n->getError()));
-      return false;
-    }
-    return true;
-  } // deleteBackupEntries
-
-  /**
-   * Change all language record for the $module from the $from_status to the
-   * $to_status.
-   * Important: The status will also changed for all records which
-   * status is set to 'IGNORE'!
-   *
-   * @param unknown_type $module
-   * @param unknown_type $from_status
-   * @param unknown_type $to_status
-   */
-  public function changeEntriesFromStatusToStatus($module, $from_status, $to_status) {
-    global $dbI18n;
-    global $dbI18nSrc;
-    global $dbI18nTrans;
-
-    $ti = $dbI18n->getTableName();
-    $tis = $dbI18nSrc->getTableName();
-    $tit = $dbI18nTrans->getTableName();
-
-    $SQL = "UPDATE `$ti`,`$tis`,`$tit` SET `i18n_status`='$to_status'," . "`src_status`='$to_status',`trans_status`='$to_status' WHERE " . "`$ti`.`i18n_id`=`$tis`.`i18n_id` AND `$ti`.`i18n_id`=`$tit`.`i18n_id` AND " . "`src_module`='$module' AND (`i18n_status`='$from_status' OR " . "`i18n_status`='IGNORE')";
-    $result = array();
-    if (!$dbI18n->sqlExec($SQL, $result)) {
-      $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $dbI18n->getError()));
-      return false;
-    }
-    return true;
-  } // createBackupEntries()
-
-  public function scanDirectory($directory) {
-    global $dbI18n;
-    global $dbI18nSrc;
-    global $dbI18nTrans;
-
-    // first thing we have to do: set the existing language entries to "backup" status
-
-    $check = self::getDirectoryTree($directory, array(
-      'php',
-      'lte'
-    ));
-    $translation = array();
-    foreach ($check as $file_path) {
-      $path_info = pathinfo($file_path);
-      if ($path_info['extension'] == 'php') {
-        if (!$this->parseSourceFile($file_path, $translation)) {
-          $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $this->getError()));
-          return false;
-        }
-      }
-      elseif ($path_info['extension'] == 'lte') {
-        if (!$this->parseTemplateFile($file_path, $translation)) {
-          $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $this->getError()));
-          return false;
-        }
-      }
-      else {
-        $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $this->lang->I18n('The file type <b>{{ file_type }}</b> is not supported!', array(
-          'file_type' => $path_info['extension']
-        ))));
-        return false;
-      }
-    }
-
-    foreach ($translation as $entry) {
-      $key = addslashes($entry['key']);
-      $SQL = "SELECT `i18n_id`, `i18n_key` FROM " . $dbI18n->getTableName() . " WHERE `i18n_key`='$key' AND (`i18n_status`='ACTIVE' OR `i18n_status`='IGNORE')";
-      $result = array();
-      if (!$dbI18n->sqlExec($SQL, $result)) {
-        $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $dbI18n->getError()));
-        return false;
-      }
-      
-      $add = false;
-      if (count($result) > 0) {
-      	$add = ($result[0]['i18n_key'] == $key) ? false : true;
-      }
-      
-      if ($add) {
-        // entry already exists, keep only the source usage
-        $data = array(
-          dbManufakturI18nSources::FIELD_I18N_ID => $result[0][dbManufakturI18n::FIELD_ID],
-          dbManufakturI18nSources::FIELD_PATH => $entry['path'],
-          dbManufakturI18nSources::FIELD_FILE => $entry['file'],
-          dbManufakturI18nSources::FIELD_LINE => $entry['line'],
-          dbManufakturI18nSources::FIELD_MODULE => $entry['module']
-        );
-        if (!$dbI18nSrc->sqlInsertRecord($data)) {
-          $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $dbI18nSrc->getError()));
-          return false;
-        }
-      }
-      else {
-        // create a new entry
-        $data = array(
-          dbManufakturI18n::FIELD_DESCRIPTION => '',
-          dbManufakturI18n::FIELD_KEY => $entry['key'],
-          dbManufakturI18n::FIELD_LAST_SYNC => date("Y-m-d H:i:s", time()),
-          dbManufakturI18n::FIELD_STATUS => dbManufakturI18n::STATUS_ACTIVE
-        );
-        $id = -1;
-        if (!$dbI18n->sqlInsertRecord($data, $id)) {
-          $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $dbI18n->getError()));
-          return false;
-        }
-        // add the standard EN translation
-        $data = array(
-          dbManufakturI18nTranslations::FIELD_AUTHOR => (isset($_SESSION['DISPLAY_NAME'])) ? $_SESSION['DISPLAY_NAME'] : dbManufakturI18n::AUTHOR_UNKNOWN,
-          dbManufakturI18nTranslations::FIELD_I18N_ID => $id,
-          dbManufakturI18nTranslations::FIELD_LANGUAGE => 'EN',
-          dbManufakturI18nTranslations::FIELD_TRANSLATION => $entry['key'],
-          dbManufakturI18nTranslations::FIELD_USAGE => dbManufakturI18nTranslations::USAGE_TEXT,
-          dbManufakturI18nTranslations::FIELD_TYPE => dbManufakturI18nTranslations::TYPE_REGULAR,
-          dbManufakturI18nTranslations::FIELD_STATUS => dbManufakturI18nTranslations::STATUS_ACTIVE
-        );
-        if (!$dbI18nTrans->sqlInsertRecord($data)) {
-          $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $dbI18nTrans->getError()));
-          return false;
-        }
-        // add source usage...
-        $data = array(
-          dbManufakturI18nSources::FIELD_I18N_ID => $id,
-          dbManufakturI18nSources::FIELD_PATH => $entry['path'],
-          dbManufakturI18nSources::FIELD_FILE => $entry['file'],
-          dbManufakturI18nSources::FIELD_LINE => $entry['line'],
-          dbManufakturI18nSources::FIELD_MODULE => $entry['module']
-        );
-        if (!$dbI18nSrc->sqlInsertRecord($data)) {
-          $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $dbI18nSrc->getError()));
-          return false;
-        }
-      }
-    }
-    return true;
-  } // scanDirectory()
+  } // dlgAbout();
 
   protected function dlgTools() {
   	$result = array();
   	//$this->parseSourceFile(LEPTON_PATH.'/modules/kit_cronjob/class.cronjob.php', $result);
-  	$this->scanDirectory(LEPTON_PATH.'/modules/kit_cronjob');
+  	//$this->scanDirectory(LEPTON_PATH.'/modules/kit_cronjob');
+  	if (!$this->lang->scanDirectory(LEPTON_PATH.'/modules/manufaktur_config')) {
+  	  $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $this->lang->getError()));
+  	  return false;
+  	}
     return __METHOD__;
   } // dlgTools()
 
   protected function dlgEdit() {
-    return __METHOD__;
+    global $database;
+
+    $module_directory = 'manufaktur_config';
+    $language = 'EN';
+
+    // first step: get the needed ID's
+    $SQL = "SELECT DISTINCT `i18n_id` FROM `".dbManufakturI18nSources::getTableName()."` ".
+        "WHERE `src_module`='$module_directory' AND `src_status`='ACTIVE'";
+    if (null == ($query = $database->query($SQL))) {
+      $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $database->get_error()));
+      return false;
+    }
+    $needed_ids = array();
+    while (false !== ($data = $query->fetchRow(MYSQL_ASSOC))) $needed_ids[] = $data['i18n_id'];
+    $nids = implode(',', $needed_ids);
+
+    // second step: get KEY data for the ID's
+    $SQL = "SELECT * FROM `".dbManufakturI18n::getTableName()."` WHERE FIND_IN_SET(`i18n_id`, '$nids')";
+    if (null == ($query = $database->query($SQL))) {
+      $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $database->get_error()));
+      return false;
+    }
+    // container for the KEY records
+    $key_data = array();
+    // container for alphabetic sort
+    $key_sort = array();
+    while (false !== ($data = $query->fetchRow(MYSQL_ASSOC))) {
+      $key_data[$data['i18n_id']] = $data;
+      $text = manufaktur_I18n::unsanitize($data['i18n_key']);
+      $text = strip_tags($text);
+      // get plain lowercase key strings for alphabetic sort
+      $key_sort[$data['i18n_id']] = strtolower($text);
+    }
+    // sort the KEYs alphabetic
+    asort($key_sort, SORT_STRING);
+
+    // third step: get the source informations
+    $SQL = "SELECT * FROM `".dbManufakturI18nSources::getTableName().
+      "` WHERE FIND_IN_SET(`i18n_id`, '$nids') AND `src_status`='ACTIVE'";
+    if (null == ($query = $database->query($SQL))) {
+      $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $database->get_error()));
+      return false;
+    }
+    $sources_data = array();
+    while (false !== ($data = $query->fetchRow(MYSQL_ASSOC)))
+      $sources_data[$data['src_id']] = $data;
+
+    // fourth step: get the translated strings for the needed language
+    $SQL = "SELECT * FROM `".dbManufakturI18nTranslations::getTableName().
+      "` WHERE FIND_IN_SET(`i18n_id`, '$nids') AND `trans_language`='$language' AND ".
+      "`trans_type`='REGULAR' AND `trans_status`='ACTIVE'";
+    if (null == ($query = $database->query($SQL))) {
+      $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $database->get_error()));
+      return false;
+    }
+    $translated_data = array();
+    while (false !== ($data = $query->fetchRow(MYSQL_ASSOC)))
+      $translated_data[$data['i18n_id']] = $data;
+
+    // fifth step: get the custom strings for the needed language
+    $SQL = "SELECT * FROM `".dbManufakturI18nTranslations::getTableName().
+    "` WHERE FIND_IN_SET(`i18n_id`, '$nids') AND `trans_language`='$language' AND ".
+    "`trans_type`='CUSTOM' AND `trans_status`='ACTIVE'";
+    if (null == ($query = $database->query($SQL))) {
+      $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $database->get_error()));
+      return false;
+    }
+    $custom_data = array();
+    while (false !== ($data = $query->fetchRow(MYSQL_ASSOC)))
+      $custom_data[$data['i18n_id']] = $data;
+
+    // sixth step: get the language string
+    $SQL = "SELECT * FROM `".dbManufakturI18nLanguages::getTableName().
+      "` WHERE `lang_iso`='".strtolower($language)."'";
+    if (null == ($query = $database->query($SQL))) {
+      $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $database->get_error()));
+      return false;
+    }
+    $lang = $query->fetchRow(MYSQL_ASSOC);
+
+    // now step through all data and build the items array
+    $items = array();
+    foreach ($key_sort as $id => $sort_string) {
+      $sources = array();
+      $i = 0;
+      foreach ($sources_data as $source) {
+        if ($source['i18n_id'] == $id) {
+          $sources[$source['src_id']] = array(
+              'id' => $source['src_id'],
+              'i18n_id' => $id,
+              'file' => $source['src_file'],
+              'path' => $source['src_path'],
+              'directory' => $source['src_module'],
+              'line' => $source['src_line'],
+              'timestamp' => $source['src_timestamp']
+              );
+          $i++;
+        }
+      }
+      $items[$id] = array(
+          'key' => array(
+              'id' => $id,
+              'value' => $key_data[$id]['i18n_key'],
+              'last_sync' => date(CFG_DATETIME_STR, strtotime($key_data[$id]['i18n_last_sync'])),
+              'status' => $key_data[$id]['i18n_status']
+              ),
+          'description' => array(
+              'value' => manufaktur_I18n::unsanitize($key_data[$id]['i18n_description']),
+              'name' => sprintf('i18n_description_%d', $id)
+              ),
+          'translation' => array(
+              'value' => (isset($translated_data[$id])) ? manufaktur_I18n::unsanitize($translated_data[$id]['trans_translation']) : '',
+              'name' => sprintf('i18n_translation_%d', $id),
+              'author' => (isset($translated_data[$id])) ? manufaktur_I18n::unsanitize($translated_data[$id]['trans_author']) : '',
+              'timestamp' => (isset($translated_data[$id])) ? date(CFG_DATETIME_STR, strtotime($translated_data[$id]['trans_timestamp'])) : '',
+              'quality' => array(
+                  'value' => (isset($translated_data[$id])) ? $translated_data[$id]['trans_quality'] : '0',
+                  'name' => sprintf('i18n_quality_%d', $id)
+                  ),
+              'is_empty' => array(
+                  'value' => (isset($translated_data[$id])) ? $translated_data[$id]['trans_is_empty'] : '0',
+                  'name' => sprintf('i18n_is_empty_%d', $id)
+                  ),
+              ),
+          'sources' => $sources,
+          'custom' => array(
+              'value' => (isset($custom_data[$id])) ? manufaktur_I18n::unsanitize($custom_data[$id]['trans_translation']) : '',
+              'name' => sprintf('custom_translation_%d', $id),
+              'is_empty' => array(
+                  'value' => (isset($custom_data[$id])) ? $custom_data[$id]['trans_is_empty'] : '0',
+                  'name' => sprintf('custom_is_empty_%d', $id)
+                  ),
+              ),
+          );
+    }
+    $its = array();
+    $data = array(
+        'form' => array(
+            'name' => 'i18n_edit',
+            'action' => self::$dialog_link
+            ),
+        'action' => array(
+            'name' => self::REQUEST_ACTION,
+            'value' => self::ACTION_EDIT_CHECK
+            ),
+        'request_items' => array(
+            'name' => self::REQUEST_ITEMS,
+            'value' => implode(',', $its)
+            ),
+        'message' => array(
+            'is_message' => ($this->isMessage()) ? 1 : 0,
+            'text' => $this->getMessage()
+            ),
+        'items' => $items,
+        'language' => array(
+            'id' => $lang['lang_id'],
+            'iso' => $lang['lang_iso'],
+            'local' => $lang['lang_local'],
+            'english' => $lang['lang_english']
+        ),
+        'settings' => array(
+            'show_sources' => (int) $this->config->getValue('cfgSourcesShow', 'manufaktur_i18n'),
+            'edit_descriptions' => (int) $this->config->getValue('cfgDescriptionsEdit', 'manufaktur_i18n')
+            )
+        );
+    return $this->getTemplate('edit.lte', $data);
   } // dlgEdit()
-} // I18n_Dialog
+
+  protected function dlgSettingGeneral() {
+    $link = sprintf('%s&amp;%s',
+        self::$dialog_link,
+        http_build_query(array(
+            self::REQUEST_ACTION => self::ACTION_SETTINGS,
+            self::REQUEST_SUB_ACTION => self::ACTION_SETTING_GENERAL)));
+    $dialog = new manufakturConfigDialog('manufaktur_i18n', 'manufaktur_I18n', $link);
+    return $dialog->action();
+  } // dlgSettingGeneral()
+
+  protected function dlgSettingUsers() {
+    return __METHOD__;
+  } // dlgSettingUsers()
+
+  protected function dlgSettingLanguages() {
+    global $database;
+
+    $SQL = "SELECT * FROM `".dbManufakturI18nLanguages::getTableName()."` ORDER BY `lang_iso` ASC";
+    if (null == ($query = $database->query($SQL))) {
+      $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $database->get_error()));
+      return false;
+    }
+    $request_items = array();
+    $items = array();
+    while (false !== ($lang = $query->fetchRow(MYSQL_ASSOC))) {
+      $request_items[] = $lang['lang_id'];
+      $items[$lang['lang_id']] = array(
+          'id' => $lang['lang_id'],
+          'iso' => $lang['lang_iso'],
+          'local' => $lang['lang_local'],
+          'english' => $lang['lang_english'],
+          'name' => sprintf('lang_id_%d', $lang['lang_id'])
+          );
+    }
+    $data = array(
+        'form' => array(
+            'name' => 'i18n_languages',
+            'action' => self::$dialog_link
+        ),
+        'action' => array(
+            'name' => self::REQUEST_ACTION,
+            'value' => self::ACTION_SETTINGS
+        ),
+        'sub_action' => array(
+            'name' => self::REQUEST_SUB_ACTION,
+            'value' => self::ACTION_SETTING_LANGUAGES_CHECK
+            ),
+        'request_items' => array(
+            'name' => self::REQUEST_ITEMS,
+            'value' => implode(',', $request_items)
+        ),
+        'message' => array(
+            'is_message' => ($this->isMessage()) ? 1 : 0,
+            'text' => ($this->isMessage()) ? $this->getMessage() : ''
+            ),
+        'items' => $items,
+        'add' => array(
+            'iso' => array(
+                'value' => isset($_REQUEST['lang_iso']) ? $_REQUEST['lang_iso'] : '',
+                'name' => 'lang_iso'
+                ),
+            'local' => array(
+                'value' => isset($_REQUEST['lang_local']) ? $_REQUEST['lang_local'] : '',
+                'name' => 'lang_local'
+                ),
+            'english' => array(
+                'value' => isset($_REQUEST['lang_english']) ? $_REQUEST['lang_english'] : '',
+                'name' => 'lang_english'
+                )
+            ),
+        'xml' => array(
+            'name' => 'lang_xml',
+            'options' => array(
+                array(
+                    'value' => '0',
+                    'text' => $this->lang->I18n('- no XML action -')
+                    ),
+                array(
+                    'value' => 'export',
+                    'text' => $this->lang->I18n('Export languages as XML file')
+                    ),
+                array(
+                    'value' => 'import',
+                    'text' => $this->lang->I18n('Import languages from XML file')
+                    )
+                )
+            )
+        );
+    return $this->getTemplate('settings.languages.lte', $data);
+  } // dlgSettingLanguages()
+
+  protected function checkSettingLanguages() {
+    global $database;
+    if (!isset($_REQUEST[self::REQUEST_ITEMS])) {
+      $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $this->lang->I18n('Missing $_REQUEST <b>i18n_its</b>!')));
+      return false;
+    }
+    if (isset($_REQUEST['lang_xml']) && ($_REQUEST['lang_xml'] == 'export')) {
+      return $this->exportXMLlanguage();
+    }
+    elseif (isset($_REQUEST['lang_xml']) && ($_REQUEST['lang_xml'] == 'import')) {
+      return $this->importXMLlanguage();
+    }
+    $message = '';
+    $this->setMessage('');
+    $items = explode(',', $_REQUEST[self::REQUEST_ITEMS]);
+    // first step: delete entries
+    foreach ($items as $id) {
+      if (isset($_REQUEST[sprintf('lang_id_%d', $id)])) {
+        $SQL = "DELETE FROM `".dbManufakturI18nLanguages::getTableName()."` WHERE `lang_id`='$id'";
+        if (null == $database->query($SQL)) {
+          $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $database->get_error()));
+          return false;
+        }
+        $message .= $this->lang->I18n('<p>The language item with the <b>ID {{ id }}</b> was successfull deleted.</p>',
+            array('id' => $id));
+      }
+    }
+    // second step: add entry
+    if (isset($_REQUEST['lang_iso']) && !empty($_REQUEST['lang_iso']) &&
+        isset($_REQUEST['lang_local']) && !empty($_REQUEST['lang_local']) &&
+        isset($_REQUEST['lang_english']) && !empty($_REQUEST['lang_english'])) {
+      // add the new entry
+      $iso = strtolower($_REQUEST['lang_iso']);
+      $SQL = "INSERT INTO `".dbManufakturI18nLanguages::getTableName()."` (".
+          "`lang_iso`,`lang_local`,`lang_english`) VALUES (".
+          "'$iso','{$_REQUEST['lang_local']}','{$_REQUEST['lang_english']}')";
+      if (null == $database->query($SQL)) {
+        $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $database->get_error()));
+        return false;
+      }
+      unset($_REQUEST['lang_iso']);
+      unset($_REQUEST['lang_local']);
+      unset($_REQUEST['lang_english']);
+      $message .= $this->lang->I18n('<p>The language with the <b>ISO Code {{ iso }}</b> was successfull added.</p>',
+          array('iso' => $iso));
+    }
+    $this->setMessage($message);
+    return $this->dlgSettingLanguages();
+  } // checkSettingLanguages()
+
+
+  protected function exportXMLlanguage() {
+    $path = LEPTON_PATH.MEDIA_DIRECTORY.DIRECTORY_SEPARATOR.date('ymd')."-i18n-languages.xml";
+
+    if (!$this->lang->writeXMLlanguageFile($path)) {
+      $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $this->lang->getError()));
+      return false;
+    }
+    $this->setMessage($this->lang->getMessage());
+    return $this->dlgSettingLanguages();
+  } // exportXMLexport()
+
+  protected function importXMLlanguage() {
+    $data = array(
+        'form' => array(
+            'name' => 'i18n_lang_import',
+            'action' => self::$dialog_link
+            ),
+        'action' => array(
+            'name' => self::REQUEST_ACTION,
+            'value' => self::ACTION_SETTINGS
+            ),
+        'sub_action' => array(
+            'name' => self::REQUEST_SUB_ACTION,
+            'value' => self::ACTION_SETTING_LANGUAGES
+             ),
+        'sub_sub_action' => array(
+            'name' => self::REQUEST_SUB_SUB_ACTION,
+            'value' => self::ACTION_IMPORT_LANGUAGE
+            ),
+        'message' => array(
+            'text' => $this->isMessage() ? $this->getMessage() : ''),
+        'xml' => array(
+            'name' => self::REQUEST_XML_FILE
+            )
+        );
+    return $this->getTemplate('import.language.lte', $data);
+  } // importXMLlanguage()
+
+  protected function execImportXMLlanguage() {
+    $xml_path = null;
+    // first: check upload
+    if (isset($_FILES[self::REQUEST_XML_FILE]) && (is_uploaded_file($_FILES[self::REQUEST_XML_FILE]['tmp_name']))) {
+      if ($_FILES[self::REQUEST_XML_FILE]['error'] == UPLOAD_ERR_OK) {
+        if ($_FILES[self::REQUEST_XML_FILE]['type'] != 'text/xml') {
+          // this is not a XML file!
+          $this->setMessage($this->lang->I18n('The uploaded file <b>{{ file }}</b> is not a valid XML file!',
+              array('file' => $_FILES[self::REQUEST_XML_FILE]['name'])));
+          @unlink($_FILES[self::REQUEST_XML_FILE]['tmp_name']);
+          return $this->importXMLlanguage();
+        }
+        $xml_path = LEPTON_PATH.'/temp/'.$_FILES[self::REQUEST_XML_FILE]['name'];
+        if (!move_uploaded_file($_FILES[self::REQUEST_XML_FILE]['tmp_name'], $xml_path)) {
+          $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__,
+              $this->lang->I18n('The file {{ file }} could not moved to the temporary directory.',
+                  array('file' => $_FILES[self::REQUEST_XML_FILE]['name']))));
+          return false;
+        }
+      }
+      else {
+        switch ($_FILES[self::REQUEST_XML_FILE]['error']) :
+        case UPLOAD_ERR_INI_SIZE:
+          $error = $this->lang->I18n('The uploaded file <b>{{ file }}</b> is greater than the parameter <b>upload_max_filesize</b> of <b>{{ max_size }}</b> within the <b>php.ini</b>',
+              array('max_size' => ini_get('upload_max_filesize'), 'file' => $_FILES[self::REQUEST_XML_FILE]['name']));
+          break;
+        case UPLOAD_ERR_FORM_SIZE:
+          $error = $this->lang->I18n('The uploaded file <b>{{ file }}</b> is greater than MAX_FILE_SIZE within the form directive.',
+              array('file' => $_FILES[self::REQUEST_XML_FILE]['name']));
+          break;
+        case UPLOAD_ERR_PARTIAL:
+          $error = $this->lang->I18n('The file <b>{{ file }}</b> was uploaded partial, please try again!',
+              array('file' => $_FILES[self::request_file]['name']));
+          break;
+        default:
+          $error = $this->lang->I18n('A not described error occured during file upload, please try again!');
+          break;
+        endswitch;
+        @unlink($_FILES[self::REQUEST_XML_FILE]['tmp_name']);
+        $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $error));
+        return false;
+      }
+    }
+    else {
+      // nothing to do ...
+      $this->setMessage($this->lang->I18n('There was no file specified for upload!'));
+      return $this->importXMLlanguage();
+    }
+
+    if (!$this->lang->readXMLlanguageFile($xml_path)) {
+      $this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $this->lang->getError()));
+      return false;
+    }
+    $this->setMessage($this->lang->getMessage());
+    return $this->dlgSettingLanguages();
+  } // execImportXMLlanguage()
+
+} // class manufakturI18nDialog

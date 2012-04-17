@@ -32,7 +32,7 @@ if (defined('WB_PATH')) {
 }
 // end include class.secure.php
 
-require_once WB_PATH.'/modules/manufaktur_i18n/class.i18n.php';
+require_once WB_PATH.'/modules/manufaktur_i18n/library.php';
 
 global $admin;
 
@@ -46,10 +46,8 @@ $error = '';
 foreach ($tables as $table) {
 	$delete = null;
 	$delete = new $table();
-	if ($delete->sqlTableExists()) {
-		if (!$delete->sqlDeleteTable()) {
+	if (!$delete->deleteTable()) {
 			$error .= sprintf('<p>[UNINSTALL] %s</p>', $delete->getError());
-		}
 	}
 }
 
